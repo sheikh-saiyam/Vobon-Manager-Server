@@ -48,7 +48,41 @@ async function run() {
       res.send(result);
     });
 
+    // get user role ----->
+    app.get("/user/role/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await usersCollection.findOne(query);
+      res.send({ role: result?.role });
+    });
 
+    // get all member users ----->
+    app.get("/all-members", async (req, res) => {
+      const result = await usersCollection
+        .find({
+          role: "member",
+        })
+        .toArray();
+      res.send(result);
+    });
+
+    // <----- Users Related CRUD ----->
+
+    // <----- Announcements CRUD ----->
+
+    // Add announcement in db --->
+    app.post("/make-announcement", async (req, res) => {
+      const announcement = req.body;
+      const result = await announcementsCollection.insertOne(announcement);
+      res.send(result);
+    });
+
+    // Get all announcements --->
+    app.get("/announcements", async (req, res) => {
+      const result = await announcementsCollection.find().toArray();
+      res.send(result);
+    });
+    // <----- Announcements CRUD ----->
 
     // <---------- ALL CRUD FUNCTIONALITY ----------> \\
 
