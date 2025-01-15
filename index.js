@@ -28,6 +28,7 @@ async function run() {
     const db = client.db("vobonDB");
     const usersCollection = db.collection("users");
     const couponsCollection = db.collection("coupons");
+    const apartmentsCollection = db.collection("apartments");
     const announcementsCollection = db.collection("announcements");
     // <-----ALL DB & COLLECTIONS-----> \\
 
@@ -68,6 +69,30 @@ async function run() {
     });
 
     // <----- Users Related CRUD ----->
+
+    // <----- Apartments CRUD ----->
+
+    // Get all apartments ----->
+    app.get("/apartments", async (req, res) => {
+      const page = parseInt(req.query.page) || 1;
+      const skip = (page - 1) * 6;
+
+      const apartments = await apartmentsCollection
+        .find()
+        .skip(skip)
+        .limit(6)
+        .toArray();
+
+      const totalApartments = await apartmentsCollection.countDocuments();
+      const totalPages = Math.ceil(totalApartments / 6);
+
+      res.send({
+        apartments,
+        totalPages,
+      });
+    });
+
+    // <----- Apartments CRUD ----->
 
     // <----- Announcements CRUD ----->
 
