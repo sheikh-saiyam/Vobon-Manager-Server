@@ -92,6 +92,14 @@ async function run() {
       });
     });
 
+    // Get random apartments ---->
+    app.get("/explore-apartments", async (req, res) => {
+      const apartments = await apartmentsCollection
+        .aggregate([{ $sample: { size: 8 } }])
+        .toArray();
+      res.send(apartments);
+    });
+
     // <----- Apartments CRUD ----->
 
     // <----- Announcements CRUD ----->
@@ -127,6 +135,15 @@ async function run() {
     });
 
     // <----- Coupons CRUD ----->
+
+    // <----- Admin Stats CRUD ----->
+    app.get("/admin-stats", async (req, res) => {
+      const users = await usersCollection.countDocuments({ role: "user" });
+      const members = await usersCollection.countDocuments({ role: "member" });
+      const apartments = await apartmentsCollection.estimatedDocumentCount();
+      res.send({ users, members, apartments });
+    });
+    // <----- Admin Stats CRUD ----->
 
     // <---------- ALL CRUD FUNCTIONALITY ----------> \\
 
