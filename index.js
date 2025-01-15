@@ -27,6 +27,7 @@ async function run() {
     // <-----ALL DB & COLLECTIONS-----> \\
     const db = client.db("vobonDB");
     const usersCollection = db.collection("users");
+    const couponsCollection = db.collection("coupons");
     const announcementsCollection = db.collection("announcements");
     // <-----ALL DB & COLLECTIONS-----> \\
 
@@ -70,7 +71,7 @@ async function run() {
 
     // <----- Announcements CRUD ----->
 
-    // Add announcement in db --->
+    // Add new announcement in db --->
     app.post("/make-announcement", async (req, res) => {
       const announcement = req.body;
       const result = await announcementsCollection.insertOne(announcement);
@@ -82,7 +83,25 @@ async function run() {
       const result = await announcementsCollection.find().toArray();
       res.send(result);
     });
+
     // <----- Announcements CRUD ----->
+
+    // <----- Coupons CRUD ----->
+
+    // Add new coupon in db --->
+    app.post("/add-coupon", async (req, res) => {
+      const coupon = req.body;
+      const result = await couponsCollection.insertOne(coupon);
+      res.send(result);
+    });
+
+    // Get all coupons --->
+    app.get("/coupons", async (req, res) => {
+      const result = await couponsCollection.find().toArray();
+      res.send(result);
+    });
+
+    // <----- Coupons CRUD ----->
 
     // <---------- ALL CRUD FUNCTIONALITY ----------> \\
 
