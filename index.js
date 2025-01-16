@@ -174,11 +174,16 @@ async function run() {
     // <----- Announcements CRUD ----->
 
     // ADMIN ONLY -> Add new announcement in db --->
-    app.post("/make-announcement", async (req, res) => {
-      const announcement = req.body;
-      const result = await announcementsCollection.insertOne(announcement);
-      res.send(result);
-    });
+    app.post(
+      "/make-announcement",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const announcement = req.body;
+        const result = await announcementsCollection.insertOne(announcement);
+        res.send(result);
+      }
+    );
 
     // Get all announcements --->
     app.get("/announcements", verifyToken, async (req, res) => {
