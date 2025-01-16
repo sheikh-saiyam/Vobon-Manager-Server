@@ -196,7 +196,7 @@ async function run() {
     // <----- Coupons CRUD ----->
 
     // ADMIN ONLY -> Add new coupon in db --->
-    app.post("/add-coupon", async (req, res) => {
+    app.post("/add-coupon", verifyToken, verifyAdmin, async (req, res) => {
       const coupon = req.body;
       const result = await couponsCollection.insertOne(coupon);
       res.send(result);
@@ -211,16 +211,21 @@ async function run() {
     });
 
     // ADMIN ONLY -> Change coupon availability --->
-    app.patch("/change-coupon-availability/:id", async (req, res) => {
-      const id = req.params.id;
-      const { availability } = req.body;
-      const filter = { _id: new ObjectId(id) };
-      const updatedCoupon = {
-        $set: { availability },
-      };
-      const result = await couponsCollection.updateOne(filter, updatedCoupon);
-      res.send(result);
-    });
+    app.patch(
+      "/change-coupon-availability/:id",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const id = req.params.id;
+        const { availability } = req.body;
+        const filter = { _id: new ObjectId(id) };
+        const updatedCoupon = {
+          $set: { availability },
+        };
+        const result = await couponsCollection.updateOne(filter, updatedCoupon);
+        res.send(result);
+      }
+    );
 
     // <----- Coupons CRUD ----->
 
