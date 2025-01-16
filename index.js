@@ -130,7 +130,21 @@ async function run() {
 
     // Get all coupons --->
     app.get("/coupons", async (req, res) => {
-      const result = await couponsCollection.find().toArray();
+      const isOnlyAvailable = req.query.availableCouponOnly === "true";
+      const option = isOnlyAvailable ? { availability: "available" } : {};
+      const result = await couponsCollection.find(option).toArray();
+      res.send(result);
+    });
+
+    // Change coupon availability --->
+    app.patch("/change-coupon-availability/:id", async (req, res) => {
+      const id = req.params.id;
+      const { availability } = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const updatedCoupon = {
+        $set: { availability },
+      };
+      const result = await couponsCollection.updateOne(filter, updatedCoupon);
       res.send(result);
     });
 
