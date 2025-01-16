@@ -137,6 +137,22 @@ async function run() {
       res.send(result);
     });
 
+    // ADMIN ONLY -> Change Member Role to User ----->
+    app.patch(
+      "/change-member-role/:email",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const email = req.params.email;
+        const filter = { email };
+        const updatedRole = {
+          $set: { role: "user" },
+        };
+        const result = await usersCollection.updateOne(filter, updatedRole);
+        res.send(result);
+      }
+    );
+
     // <----- Users Related CRUD ----->
 
     // <----- Apartments CRUD ----->
