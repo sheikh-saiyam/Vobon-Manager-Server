@@ -1,14 +1,23 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 const { MongoClient, ObjectId } = require("mongodb");
 
 const app = express();
 const port = process.env.PORT || 5000;
 
+const corsOptions = {
+  origin: ["http://localhost:5173"],
+  credentials: true,
+  optionalSuccessStatus: 200,
+};
+
 // middlewares
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
+app.use(cookieParser());
 // middlewares
 
 // MongoDB Setup ----->
@@ -22,6 +31,19 @@ const client = new MongoClient(uri, {
 });
 // custom client code for connecting to DB
 
+// Verify Functions ----->
+
+// <-----Verify Token----->
+// <-----Verify Token----->
+
+// <-----Verify Admin----->
+// <-----Verify Admin----->
+
+// <-----Verify Member----->
+// <-----Verify Member----->
+
+// Verify Functions ----->
+
 async function run() {
   try {
     // <-----ALL DB & COLLECTIONS-----> \\
@@ -31,6 +53,33 @@ async function run() {
     const apartmentsCollection = db.collection("apartments");
     const announcementsCollection = db.collection("announcements");
     // <-----ALL DB & COLLECTIONS-----> \\
+
+    // <-----JWT API's And Functionality----->
+
+    // Cookie Options --->
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+    };
+
+    // Create Jwt Token On Successful Login Register --->
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.JWT_SECRET, {
+        expiresIn: "14d",
+      });
+      res.cookie("token", token, cookieOptions).send({ success: true });
+    });
+
+    // Clear Token From Cookies On Logout --->
+    app.post("/logout", async (req, res) => {
+      res
+        .clearCookie("token", { ...cookieOptions, maxAge: 0 })
+        .send({ success: true });
+    });
+
+    // <-----JWT API's And Functionality----->
 
     // <---------- ALL CRUD FUNCTIONALITY ----------> \\
 
@@ -58,7 +107,7 @@ async function run() {
       res.send({ role: result?.role });
     });
 
-    // get all member users ----->
+    // ADMIN ONLY -> get all member users ----->
     app.get("/all-members", async (req, res) => {
       const result = await usersCollection
         .find({
@@ -104,7 +153,7 @@ async function run() {
 
     // <----- Announcements CRUD ----->
 
-    // Add new announcement in db --->
+    // ADMIN ONLY -> Add new announcement in db --->
     app.post("/make-announcement", async (req, res) => {
       const announcement = req.body;
       const result = await announcementsCollection.insertOne(announcement);
@@ -121,14 +170,14 @@ async function run() {
 
     // <----- Coupons CRUD ----->
 
-    // Add new coupon in db --->
+    // ADMIN ONLY -> Add new coupon in db --->
     app.post("/add-coupon", async (req, res) => {
       const coupon = req.body;
       const result = await couponsCollection.insertOne(coupon);
       res.send(result);
     });
 
-    // Get all coupons --->
+    // Get all coupons by availableCouponOnly query --->
     app.get("/coupons", async (req, res) => {
       const isOnlyAvailable = req.query.availableCouponOnly === "true";
       const option = isOnlyAvailable ? { availability: "available" } : {};
@@ -136,7 +185,7 @@ async function run() {
       res.send(result);
     });
 
-    // Change coupon availability --->
+    // ADMIN ONLY -> Change coupon availability --->
     app.patch("/change-coupon-availability/:id", async (req, res) => {
       const id = req.params.id;
       const { availability } = req.body;
@@ -150,14 +199,14 @@ async function run() {
 
     // <----- Coupons CRUD ----->
 
-    // <----- Admin Stats CRUD ----->
+    // ADMIN ONLY -> Admin Stats CRUD ----->
     app.get("/admin-stats", async (req, res) => {
       const users = await usersCollection.countDocuments({ role: "user" });
       const members = await usersCollection.countDocuments({ role: "member" });
       const apartments = await apartmentsCollection.estimatedDocumentCount();
       res.send({ users, members, apartments });
     });
-    // <----- Admin Stats CRUD ----->
+    // ADMIN ONLY -> Admin Stats CRUD ----->
 
     // <---------- ALL CRUD FUNCTIONALITY ----------> \\
 
