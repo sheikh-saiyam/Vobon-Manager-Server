@@ -34,12 +34,22 @@ const client = new MongoClient(uri, {
 // Verify Functions ----->
 
 // <-----Verify Token----->
-// <-----Verify Token----->
+const verifyToken = (req, res, next) => {
+  const token = req.cookies?.token;
+  if (!token) {
+    return res.status(401).send({ massage: "Unauthorized Access" });
+  }
+  jwt.verify(token, process.env.JWT_SECRET, (error, decoded) => {
+    if (error) {
+      return res.status(401).send({ massage: "Unauthorized Access" });
+    }
+    req.user = decoded;
+    next();
+  });
+};
 
 // <-----Verify Admin----->
-// <-----Verify Admin----->
 
-// <-----Verify Member----->
 // <-----Verify Member----->
 
 // Verify Functions ----->
@@ -85,7 +95,7 @@ async function run() {
 
     // <----- Users Related CRUD ----->
 
-    // save user data in db ----->
+    // Save user data in db ----->
     app.post("/users", async (req, res) => {
       const user = req.body;
       // check if user is already exists--->
@@ -99,15 +109,18 @@ async function run() {
       res.send(result);
     });
 
-    // get user role ----->
-    app.get("/user/role/:email", async (req, res) => {
+    // Get user role ----->
+    app.get("/user/role/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
+      if (email !== req.user.email) {
+        return res.status(403).send({ message: "Forbidden Access" });
+      }
       const result = await usersCollection.findOne(query);
       res.send({ role: result?.role });
     });
 
-    // ADMIN ONLY -> get all member users ----->
+    // ADMIN ONLY -> Get all member users ----->
     app.get("/all-members", async (req, res) => {
       const result = await usersCollection
         .find({
@@ -161,7 +174,7 @@ async function run() {
     });
 
     // Get all announcements --->
-    app.get("/announcements", async (req, res) => {
+    app.get("/announcements", verifyToken, async (req, res) => {
       const result = await announcementsCollection.find().toArray();
       res.send(result);
     });
