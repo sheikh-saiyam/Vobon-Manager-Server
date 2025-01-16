@@ -31,8 +31,6 @@ const client = new MongoClient(uri, {
 });
 // custom client code for connecting to DB
 
-// Verify Functions ----->
-
 // <-----Verify Token----->
 const verifyToken = (req, res, next) => {
   const token = req.cookies?.token;
@@ -47,12 +45,6 @@ const verifyToken = (req, res, next) => {
     next();
   });
 };
-
-// <-----Verify Admin----->
-
-// <-----Verify Member----->
-
-// Verify Functions ----->
 
 async function run() {
   try {
@@ -91,6 +83,21 @@ async function run() {
 
     // <-----JWT API's And Functionality----->
 
+    // <-----Verify Admin----->
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.user?.email;
+      const query = { email };
+      const user = await usersCollection.findOne(query);
+      if (!user || user?.role !== "admin") {
+        return res
+          .status(403)
+          .send({ message: "Forbidden Access! Admin Only Actions" });
+      }
+      next();
+    };
+
+    // <-----Verify Member----->
+
     // <---------- ALL CRUD FUNCTIONALITY ----------> \\
 
     // <----- Users Related CRUD ----->
@@ -121,7 +128,7 @@ async function run() {
     });
 
     // ADMIN ONLY -> Get all member users ----->
-    app.get("/all-members", async (req, res) => {
+    app.get("/all-members", verifyToken, verifyAdmin, async (req, res) => {
       const result = await usersCollection
         .find({
           role: "member",
