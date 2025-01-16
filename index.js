@@ -230,7 +230,7 @@ async function run() {
     // <----- Coupons CRUD ----->
 
     // ADMIN ONLY -> Admin Stats CRUD ----->
-    app.get("/admin-stats", async (req, res) => {
+    app.get("/admin-stats", verifyToken, verifyAdmin, async (req, res) => {
       const users = await usersCollection.countDocuments({ role: "user" });
       const members = await usersCollection.countDocuments({ role: "member" });
       const apartments = await apartmentsCollection.estimatedDocumentCount();
