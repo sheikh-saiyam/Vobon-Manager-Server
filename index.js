@@ -213,6 +213,16 @@ async function run() {
       res.send(result);
     });
 
+    // ADMIN ONLY -> Get all agreement requests --->
+    app.get(
+      "/all-agreement-requests",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const result = await agreementsCollection.find().toArray();
+        res.send(result);
+      }
+    );
 
     // <----- Agreements CRUD ----->
 
