@@ -53,6 +53,7 @@ async function run() {
     const usersCollection = db.collection("users");
     const couponsCollection = db.collection("coupons");
     const apartmentsCollection = db.collection("apartments");
+    const agreementsCollection = db.collection("agreements");
     const announcementsCollection = db.collection("announcements");
     // <-----ALL DB & COLLECTIONS-----> \\
 
@@ -177,6 +178,11 @@ async function run() {
       });
     });
 
+    app.get("/all-apartments", async (req, res) => {
+      const result = await apartmentsCollection.find().toArray();
+      res.send(result);
+    });
+
     // Get random apartments ---->
     app.get("/explore-apartments", async (req, res) => {
       const apartments = await apartmentsCollection
@@ -186,6 +192,29 @@ async function run() {
     });
 
     // <----- Apartments CRUD ----->
+
+    // <----- Agreements CRUD ----->
+
+    // Add new agreement in db --->
+    app.post("/make-agreement-request", verifyToken, async (req, res) => {
+      const agreement = req.body;
+      // check if user already had an agreement-request --->
+      const query = { "user_details.email": agreement.user_details.email };
+      const userAgreementExists = await agreementsCollection.findOne(query);
+      if (userAgreementExists) {
+        return res.send({
+          title: "Action not permitted",
+          message:
+            "You already have an agreement. Each user is allowed to agreement for only one apartment",
+        });
+      }
+      // if user not had an agreement-request then save in db --->
+      const result = await agreementsCollection.insertOne(agreement);
+      res.send(result);
+    });
+
+
+    // <----- Agreements CRUD ----->
 
     // <----- Announcements CRUD ----->
 
