@@ -213,14 +213,76 @@ async function run() {
       res.send(result);
     });
 
-    // ADMIN ONLY -> Get all agreement requests --->
+    // ADMIN ONLY -> Get all pending agreement requests --->
     app.get(
       "/all-agreement-requests",
       verifyToken,
       verifyAdmin,
       async (req, res) => {
-        const result = await agreementsCollection.find().toArray();
+        const result = await agreementsCollection
+          .find({
+            agreement_status: "pending",
+          })
+          .toArray();
         res.send(result);
+      }
+    );
+
+    // ADMIN ONLY -> Accept Agreement Request --->
+    app.patch(
+      "/accept-agreement-request/:id",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        // Get required data from req.body --->
+        const { user_email, apartment_id } = req.body;
+
+        // 1. update agreement status to checked --->
+        const id = req.params.id;
+        const agreementFilter = { _id: new ObjectId(id) };
+        const updatedAgreementStatus = {
+          $set: {
+            agreement_status: "checked",
+            agreement_accept_date: new Date(),
+          },
+        };
+        const agreementResult = await agreementsCollection.updateOne(
+          agreementFilter,
+          updatedAgreementStatus
+        );
+
+        // 2. update user role to member --->
+        const query = { email: user_email };
+        const updatedRole = {
+          $set: {
+            role: "member",
+          },
+        };
+        const roleResult = await usersCollection.updateOne(query, updatedRole);
+
+        // 3. update apartment status to rented --->
+        const apartmentFilter = { _id: new ObjectId(apartment_id) };
+        const updatedApartmentStatus = {
+          $set: {
+            status: "rented",
+          },
+        };
+        const apartmentResult = await apartmentsCollection.updateOne(
+          apartmentFilter,
+          updatedApartmentStatus
+        );
+
+        res.send({ agreementResult, roleResult, apartmentResult });
+      }
+    );
+
+    // ADMIN ONLY -> Reject Agreement Request --->
+    app.patch(
+      "/reject-agreement-request",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        // 1. update agreement status to checked --->
       }
     );
 
@@ -289,7 +351,7 @@ async function run() {
       const users = await usersCollection.countDocuments({ role: "user" });
       const members = await usersCollection.countDocuments({ role: "member" });
       const apartments = await apartmentsCollection.estimatedDocumentCount();
-      res.send({ users, members, apartments });
+ 
     });
     // ADMIN ONLY -> Admin Stats CRUD ----->
 
