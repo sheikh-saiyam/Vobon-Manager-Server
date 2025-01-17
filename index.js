@@ -351,7 +351,24 @@ async function run() {
       const users = await usersCollection.countDocuments({ role: "user" });
       const members = await usersCollection.countDocuments({ role: "member" });
       const apartments = await apartmentsCollection.estimatedDocumentCount();
- 
+      // Get available & agreement apartments in % --->
+      const availableApartments = await apartmentsCollection.countDocuments({
+        status: "available",
+      });
+      const agreementApartments = await apartmentsCollection.countDocuments({
+        status: "rented",
+      });
+      const availablePercentage = (availableApartments / apartments) * 100;
+      const agreementPercentage = (agreementApartments / apartments) * 100;
+      res.send({
+        users,
+        members,
+        apartments,
+        available_apartments: availableApartments,
+        agreement_apartments: agreementApartments,
+        availablePercentage: Math.round(availablePercentage.toFixed(0)),
+        agreementPercentage: Math.round(agreementPercentage.toFixed(0)),
+      });
     });
     // ADMIN ONLY -> Admin Stats CRUD ----->
 
