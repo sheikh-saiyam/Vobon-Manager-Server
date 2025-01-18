@@ -234,11 +234,11 @@ async function run() {
       verifyToken,
       verifyAdmin,
       async (req, res) => {
-        // Get required data from req.body --->
+        // Get required data from req --->
+        const id = req.params.id;
         const { user_email, apartment_id } = req.body;
 
         // 1. update agreement status to checked --->
-        const id = req.params.id;
         const agreementFilter = { _id: new ObjectId(id) };
         const updatedAgreementStatus = {
           $set: {
@@ -298,6 +298,21 @@ async function run() {
         res.send(result);
       }
     );
+
+    // MEMBER ONLY -> Get agreement based on member email --->
+    app.get("/my-agreement/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+      // email verification --->
+      if (email !== req.user.email) {
+        return res.status(403).send({ message: "Forbidden Access" });
+      }
+      const query = { "user_details.email": email };
+      const result = await agreementsCollection.findOne({
+        ...query,
+        agreement_status: "checked",
+      });
+      res.send(result);
+    });
 
     // <----- Agreements CRUD ----->
 
