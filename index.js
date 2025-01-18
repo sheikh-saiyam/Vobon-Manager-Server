@@ -4,6 +4,7 @@ require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const { MongoClient, ObjectId } = require("mongodb");
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -311,19 +312,24 @@ async function run() {
     );
 
     // MEMBER ONLY -> Get agreement based on member email --->
-    app.get("/my-agreement/:email", verifyToken, verifyMember, async (req, res) => {
-      const email = req.params.email;
-      // email verification --->
-      if (email !== req.user.email) {
-        return res.status(403).send({ message: "Forbidden Access" });
+    app.get(
+      "/my-agreement/:email",
+      verifyToken,
+      verifyMember,
+      async (req, res) => {
+        const email = req.params.email;
+        // email verification --->
+        if (email !== req.user.email) {
+          return res.status(403).send({ message: "Forbidden Access" });
+        }
+        const query = { "user_details.email": email };
+        const result = await agreementsCollection.findOne({
+          ...query,
+          agreement_status: "checked",
+        });
+        res.send(result);
       }
-      const query = { "user_details.email": email };
-      const result = await agreementsCollection.findOne({
-        ...query,
-        agreement_status: "checked",
-      });
-      res.send(result);
-    });
+    );
 
     // <----- Agreements CRUD ----->
 
@@ -384,6 +390,11 @@ async function run() {
     );
 
     // <----- Coupons CRUD ----->
+
+    // <----- Payment Functionality & CRUD ----->
+
+
+    // <----- Payment Functionality & CRUD ----->
 
     // ADMIN ONLY -> Admin Stats CRUD ----->
     app.get("/admin-stats", verifyToken, verifyAdmin, async (req, res) => {
