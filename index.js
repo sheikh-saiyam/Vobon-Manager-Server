@@ -278,11 +278,24 @@ async function run() {
 
     // ADMIN ONLY -> Reject Agreement Request --->
     app.patch(
-      "/reject-agreement-request",
+      "/reject-agreement-request/:id",
       verifyToken,
       verifyAdmin,
       async (req, res) => {
-        // 1. update agreement status to checked --->
+        // update agreement status to checked --->
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) };
+        const updatedAgreementStatus = {
+          $set: {
+            agreement_status: "rejected",
+            agreement_reject_date: new Date(),
+          },
+        };
+        const result = await agreementsCollection.updateOne(
+          filter,
+          updatedAgreementStatus
+        );
+        res.send(result);
       }
     );
 
