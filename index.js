@@ -393,6 +393,25 @@ async function run() {
 
     // <----- Payment Functionality & CRUD ----->
 
+    // Create A PaymentIntent --->
+    app.post("/create-payment-intent", verifyToken, async (req, res) => {
+      // Get the price --->
+      const { rentPrice } = req.body;
+      
+      // Calculate the price in cent --->
+      const price = rentPrice * 100;
+
+      // Create a PaymentIntent with the order amount and currency --->
+      const { client_secret } = await stripe.paymentIntents.create({
+        amount: price,
+        currency: "usd",
+        automatic_payment_methods: {
+          enabled: true,
+        },
+      });
+
+      res.send({ clientSecret: client_secret });
+    });
 
     // <----- Payment Functionality & CRUD ----->
 
