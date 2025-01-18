@@ -98,6 +98,17 @@ async function run() {
     };
 
     // <-----Verify Member----->
+    const verifyMember = async (req, res, next) => {
+      const email = req.user?.email;
+      const query = { email };
+      const user = await usersCollection.findOne(query);
+      if (!user || user?.role !== "member") {
+        return res
+          .status(403)
+          .send({ message: "Forbidden Access! Member Only Actions" });
+      }
+      next();
+    };
 
     // <---------- ALL CRUD FUNCTIONALITY ----------> \\
 
@@ -300,7 +311,7 @@ async function run() {
     );
 
     // MEMBER ONLY -> Get agreement based on member email --->
-    app.get("/my-agreement/:email", verifyToken, async (req, res) => {
+    app.get("/my-agreement/:email", verifyToken, verifyMember, async (req, res) => {
       const email = req.params.email;
       // email verification --->
       if (email !== req.user.email) {
