@@ -53,6 +53,7 @@ async function run() {
     const db = client.db("vobonDB");
     const usersCollection = db.collection("users");
     const couponsCollection = db.collection("coupons");
+    const paymentsCollection = db.collection("payments");
     const apartmentsCollection = db.collection("apartments");
     const agreementsCollection = db.collection("agreements");
     const announcementsCollection = db.collection("announcements");
@@ -397,7 +398,6 @@ async function run() {
     app.post("/create-payment-intent", verifyToken, async (req, res) => {
       // Get the price --->
       const { rentPrice } = req.body;
-      
       // Calculate the price in cent --->
       const price = rentPrice * 100;
 
@@ -412,6 +412,18 @@ async function run() {
 
       res.send({ clientSecret: client_secret });
     });
+
+    // Save new payment information in db --->
+    app.post(
+      "/save-payment-information",
+      verifyToken,
+      verifyMember,
+      async (req, res) => {
+        const payment_information = req.body;
+        const result = await paymentsCollection.insertOne(payment_information);
+        res.send(result);
+      }
+    );
 
     // <----- Payment Functionality & CRUD ----->
 
