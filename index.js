@@ -425,6 +425,23 @@ async function run() {
       }
     );
 
+    // Get all payments based on member_email --->
+    app.get(
+      "/my-payment-history/:email",
+      verifyToken,
+      verifyMember,
+      async (req, res) => {
+        const email = req.params.email;
+        const query = { member_email: email };
+        // email verification --->
+        if (email !== req.user.email) {
+          return res.status(403).send({ message: "Forbidden Access" });
+        }
+        const result = await paymentsCollection.find(query).toArray();
+        res.send(result);
+      }
+    );
+
     // <----- Payment Functionality & CRUD ----->
 
     // ADMIN ONLY -> Admin Stats CRUD ----->
