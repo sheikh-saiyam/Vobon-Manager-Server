@@ -174,10 +174,18 @@ async function run() {
     // Get all apartments ----->
     app.get("/apartments", async (req, res) => {
       const page = parseInt(req.query.page) || 1;
+      const min = parseInt(req.query.min, 10);
+      const max = parseInt(req.query.max, 10);
+
+      let query = {};
       const skip = (page - 1) * 6;
+      
+      if (!isNaN(min) && !isNaN(max) && min > 0 && max > 0) {
+        query = { rent: { $gte: min, $lte: max } };
+      }
 
       const apartments = await apartmentsCollection
-        .find()
+        .find(query)
         .skip(skip)
         .limit(6)
         .toArray();
