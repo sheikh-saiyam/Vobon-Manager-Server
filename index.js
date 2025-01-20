@@ -190,11 +190,12 @@ async function run() {
         .limit(6)
         .toArray();
 
-      const totalApartments = await apartmentsCollection.countDocuments();
+      const totalApartments = await apartmentsCollection.countDocuments(query);
       const totalPages = Math.ceil(totalApartments / 6);
 
       res.send({
         apartments,
+        totalApartments,
         totalPages,
       });
     });
