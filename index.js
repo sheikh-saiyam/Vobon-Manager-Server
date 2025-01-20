@@ -10,7 +10,7 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 const corsOptions = {
-  origin: ["http://localhost:5173"],
+  origin: ["http://localhost:5173", "https://saiyam-assignment12.netlify.app"],
   credentials: true,
   optionalSuccessStatus: 200,
 };
@@ -482,10 +482,10 @@ async function run() {
     // <---------- ALL CRUD FUNCTIONALITY ----------> \\
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
+    // await client.db("admin").command({ ping: 1 });
+    // console.log(
+    //   "Pinged your deployment. You successfully connected to MongoDB!"
+    // );
   } catch (error) {
     console.log("Error caught-->", error);
   }
