@@ -171,7 +171,7 @@ async function run() {
 
     // <----- Apartments CRUD ----->
 
-    // Get all apartments ----->
+    // Get all apartments with pagination & rent search ----->
     app.get("/apartments", async (req, res) => {
       const page = parseInt(req.query.page) || 1;
       const min = parseInt(req.query.min, 10);
@@ -179,7 +179,7 @@ async function run() {
 
       let query = {};
       const skip = (page - 1) * 6;
-      
+
       if (!isNaN(min) && !isNaN(max) && min > 0 && max > 0) {
         query = { rent: { $gte: min, $lte: max } };
       }
@@ -421,7 +421,7 @@ async function run() {
       res.send({ clientSecret: client_secret });
     });
 
-    // Save new payment information in db --->
+    // MEMBER ONLY -> Save new payment information in db --->
     app.post(
       "/save-payment-information",
       verifyToken,
@@ -433,7 +433,7 @@ async function run() {
       }
     );
 
-    // Get all payments based on member_email --->
+    // MEMBER ONLY -> Get all payments based on member_email --->
     app.get(
       "/my-payment-history/:email",
       verifyToken,
