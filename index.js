@@ -255,7 +255,15 @@ async function run() {
       }
     );
 
-    
+    // ADMIN ONLY -> Get all agreements --->
+    app.get("/all-agreements", verifyToken, verifyAdmin, async (req, res) => {
+      const result = await agreementsCollection
+        .find({
+          agreement_status: "checked",
+        })
+        .toArray();
+      res.send(result);
+    });
 
     // ADMIN ONLY -> Accept Agreement Request --->
     app.patch(
