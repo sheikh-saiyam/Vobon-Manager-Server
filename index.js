@@ -185,12 +185,15 @@ async function run() {
       }
 
       const apartments = await apartmentsCollection
-        .find(query)
+        .find({ ...query, status: "available" })
         .skip(skip)
         .limit(6)
         .toArray();
 
-      const totalApartments = await apartmentsCollection.countDocuments(query);
+      const totalApartments = await apartmentsCollection.countDocuments({
+        ...query,
+        status: "available",
+      });
       const totalPages = Math.ceil(totalApartments / 6);
 
       res.send({
@@ -201,7 +204,9 @@ async function run() {
     });
 
     app.get("/all-apartments", async (req, res) => {
-      const result = await apartmentsCollection.find().toArray();
+      const result = await apartmentsCollection
+        .find({ status: "available" })
+        .toArray();
       res.send(result);
     });
 
@@ -249,6 +254,8 @@ async function run() {
         res.send(result);
       }
     );
+
+    
 
     // ADMIN ONLY -> Accept Agreement Request --->
     app.patch(
@@ -340,6 +347,25 @@ async function run() {
         res.send(result);
       }
     );
+
+    // USER ONLY -> Get user requested agreement data --->
+    app.get("/my-requested-agreement/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+      const query = { "user_details.email": email };
+      const result = await agreementsCollection.findOne({
+        ...query,
+        agreement_status: { $in: ["pending", "rejected"] },
+      });
+      res.send({
+        user_email: result?.user_details.email,
+        apartmentNumber: result?.apartmentNumber,
+        floorNumber: result?.floorNumber,
+        blockName: result?.blockName,
+        rent: result?.rent,
+        agreement_request_date: result?.agreement_request_date.split("T")[0],
+        agreement_status: result?.agreement_status,
+      });
+    });
 
     // <----- Agreements CRUD ----->
 
